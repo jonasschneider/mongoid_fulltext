@@ -1,5 +1,4 @@
 require 'mongoid_indexes'
-require 'unicode_utils'
 require 'cgi'
 
 module Mongoid::FullTextSearch
@@ -186,7 +185,12 @@ module Mongoid::FullTextSearch
       return {} if str.nil?
 
       if config[:remove_accents]
-        str = UnicodeUtils.nfkd(CGI.unescape(str)).gsub(/[^\x00-\x7F]/,'')
+        begin
+          require 'unicode_utils'
+          str = UnicodeUtils.nfkd(CGI.unescape(str)).gsub(/[^\x00-\x7F]/,'')
+        rescue Exception => e
+          puts "warning: could not remove accents, 'gem install unicode_utils'!"
+        end
       end
 
       # Remove any characters that aren't in the alphabet and aren't word separators
